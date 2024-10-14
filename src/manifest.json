@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Cibar",
+  "version": "1.0",
+  "description": "A Chrome extension built to combat cyberbullying",
+  "permissions": ["activeTab", "storage", "tabs", "https://api.openai.com/"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

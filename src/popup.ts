@@ -1,21 +1,29 @@
-let popupIsCapturing = false;
-const toggleButton = document.getElementById(
-  "toggleButton"
-) as HTMLButtonElement;
-
-toggleButton.addEventListener("click", () => {
-  popupIsCapturing = !popupIsCapturing;
-  toggleButton.textContent = popupIsCapturing
-    ? "Stop Capturing"
-    : "Start Capturing";
-  chrome.runtime.sendMessage(
-    { action: "toggleCapture", isCapturing: popupIsCapturing },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error sending message:", chrome.runtime.lastError);
-      } else {
-        console.log("Message sent successfully", response);
+function updateScreenshots() {
+  const screenshotList = document.getElementById("screenshotList");
+  if (screenshotList) {
+    screenshotList.innerHTML = ""; // Clear existing screenshots
+    chrome.runtime.sendMessage({ action: "getScreenshots" }, (response) => {
+      if (response) {
+        const timestamps = Object.keys(response).sort().reverse(); // Sort timestamps in reverse order
+        timestamps.forEach((timestamp) => {
+          const img = document.createElement("img");
+          img.src = response[timestamp];
+          img.style.width = "200px"; // Adjust size as needed
+          screenshotList.appendChild(img);
+        });
       }
-    }
-  );
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Initial update of screenshots when popup opens
+  updateScreenshots();
+});
+
+// Listen for new screenshots
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === "screenshotTaken") {
+    updateScreenshots();
+  }
 });

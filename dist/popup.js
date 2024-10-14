@@ -1,11 +1,28 @@
 "use strict";
-// src/popup.ts
-// Select the button in the popup
-const button = document.getElementById("changeColor");
-// Set up an event listener for the button click
-button === null || button === void 0 ? void 0 : button.addEventListener("click", () => {
-    // Define the color you want to change to
-    const color = "lightgreen";
-    // Send a message to the background script to change the color
-    chrome.runtime.sendMessage({ action: "changeColor", color });
+function updateScreenshots() {
+    const screenshotList = document.getElementById("screenshotList");
+    if (screenshotList) {
+        screenshotList.innerHTML = ""; // Clear existing screenshots
+        chrome.runtime.sendMessage({ action: "getScreenshots" }, (response) => {
+            if (response) {
+                const timestamps = Object.keys(response).sort().reverse(); // Sort timestamps in reverse order
+                timestamps.forEach((timestamp) => {
+                    const img = document.createElement("img");
+                    img.src = response[timestamp];
+                    img.style.width = "200px"; // Adjust size as needed
+                    screenshotList.appendChild(img);
+                });
+            }
+        });
+    }
+}
+document.addEventListener("DOMContentLoaded", () => {
+    // Initial update of screenshots when popup opens
+    updateScreenshots();
+});
+// Listen for new screenshots
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === "screenshotTaken") {
+        updateScreenshots();
+    }
 });
