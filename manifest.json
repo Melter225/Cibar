@@ -6,14 +6,8 @@
   "action": {
     "default_popup": "src/popup.html"
   },
-  "permissions": [],
+  "permissions": ["activeTab", "scripting", "storage", "tabs", "windows"],
   "background": {
     "service_worker": "dist/background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["dist/content.js"]
-    }
-  ]
+  }
 }

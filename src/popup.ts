@@ -1,13 +1,21 @@
-// src/popup.ts
+let popupIsCapturing = false;
+const toggleButton = document.getElementById(
+  "toggleButton"
+) as HTMLButtonElement;
 
-// Select the button in the popup
-const button = document.getElementById("changeColor");
-
-// Set up an event listener for the button click
-button?.addEventListener("click", () => {
-  // Define the color you want to change to
-  const color = "lightgreen";
-
-  // Send a message to the background script to change the color
-  chrome.runtime.sendMessage({ action: "changeColor", color });
+toggleButton.addEventListener("click", () => {
+  popupIsCapturing = !popupIsCapturing;
+  toggleButton.textContent = popupIsCapturing
+    ? "Stop Capturing"
+    : "Start Capturing";
+  chrome.runtime.sendMessage(
+    { action: "toggleCapture", isCapturing: popupIsCapturing },
+    (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Error sending message:", chrome.runtime.lastError);
+      } else {
+        console.log("Message sent successfully", response);
+      }
+    }
+  );
 });
