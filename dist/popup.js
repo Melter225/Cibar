@@ -1,28 +1,37 @@
 "use strict";
-function updateScreenshots() {
-    const screenshotList = document.getElementById("screenshotList");
-    if (screenshotList) {
-        screenshotList.innerHTML = ""; // Clear existing screenshots
-        chrome.runtime.sendMessage({ action: "getScreenshots" }, (response) => {
-            if (response) {
-                const timestamps = Object.keys(response).sort().reverse(); // Sort timestamps in reverse order
-                timestamps.forEach((timestamp) => {
-                    const img = document.createElement("img");
-                    img.src = response[timestamp];
-                    img.style.width = "200px"; // Adjust size as needed
-                    screenshotList.appendChild(img);
-                });
-            }
-        });
+const CAPTURE_INTERVAL = 10000;
+const RESULT_DISPLAY_DURATION = 3000;
+let lastUpdateTime = 0;
+function updateAnalysisResult(result) {
+    const statusElement = document.getElementById("status");
+    const resultElement = document.getElementById("analysisResult");
+    if (statusElement && resultElement) {
+        resultElement.textContent = JSON.stringify(result, null, 2);
+        resultElement.style.display = "block";
+        statusElement.style.display = "none";
+        lastUpdateTime = Date.now();
+        setTimeout(() => {
+            statusElement.style.display = "block";
+            resultElement.style.display = "none";
+        }, RESULT_DISPLAY_DURATION);
     }
 }
-document.addEventListener("DOMContentLoaded", () => {
-    // Initial update of screenshots when popup opens
-    updateScreenshots();
-});
-// Listen for new screenshots
+function checkAnalysisStatus() {
+    const statusElement = document.getElementById("status");
+    const resultElement = document.getElementById("analysisResult");
+    if (statusElement && resultElement) {
+        const currentTime = Date.now();
+        const timeSinceLastUpdate = currentTime - lastUpdateTime;
+        if (timeSinceLastUpdate >= CAPTURE_INTERVAL) {
+            statusElement.style.display = "block";
+            resultElement.style.display = "none";
+        }
+    }
+}
 chrome.runtime.onMessage.addListener((message) => {
-    if (message.action === "screenshotTaken") {
-        updateScreenshots();
+    if (message.action === "analysisResult") {
+        updateAnalysisResult(message.result);
     }
 });
+setInterval(checkAnalysisStatus, 1000);
+checkAnalysisStatus();
