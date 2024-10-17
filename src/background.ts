@@ -2,7 +2,10 @@ let isCapturing = false;
 let intervalId: number | NodeJS.Timeout | null = null;
 import { GOOGLE_CLOUD_API_KEY } from "./config.js";
 
+console.log("Background script loaded");
+
 async function analyzeImageWithApiKey(base64Image: string) {
+  console.log("Calling Vision API...");
   const apiEndpoint = "https://vision.googleapis.com/v1/images:annotate";
 
   const requestBody = {
@@ -46,6 +49,7 @@ async function analyzeImageWithApiKey(base64Image: string) {
 }
 
 async function analyzeScreenshot(dataUrl: string) {
+  console.log("Analyzing screenshot...");
   try {
     const base64Image = dataUrl.replace(
       /^data:image\/(png|jpg|jpeg);base64,/,
@@ -73,19 +77,19 @@ async function analyzeScreenshot(dataUrl: string) {
         switch (severity) {
           case 0:
             message =
-              "Cibar has detected some signs that you might be experiencing cyberbullying. Even if it doesn’t feel severe yet, it’s important to take this seriously. Start by documenting any messages or interactions that involve adult or violent content. Consider blocking the person involved and report the content to the platform’s moderators. Stay cautious, and take a break from the platform if you need to.";
+              "Cibar has detected some signs that you <b>might be experiencing</b> cyberbullying. Even if it doesn’t feel severe yet, it’s important to take this seriously. Start by documenting any messages or interactions that involve adult or violent content. Consider blocking the person involved and report the content to the platform’s moderators. Stay cautious, and take a break from the platform if you need to.";
             break;
           case 1:
             message =
-              "Cibar has identified that cyberbullying is likely happening. You might be receiving unwanted or inappropriate messages. Don’t engage with the person. Instead, block them, report the behavior, and keep records of the interactions. It's a good idea to reach out to someone you trust for support and take control by adjusting your privacy settings.";
+              "Cibar has identified that cyberbullying is <b>likely happening</b>. You might be receiving unwanted or inappropriate messages. Don’t engage with the person. Instead, block them, report the behavior, and keep records of the interactions. It's a good idea to reach out to someone you trust for support and take control by adjusting your privacy settings.";
             break;
           case 2:
             message =
-              "Cibar is telling you that cyberbullying is very likely. You might be dealing with repeated, harmful interactions involving adult or violent content. At this point, it’s crucial to block and report the person immediately. Keep evidence of what's happening and, if the content is especially harmful, consider reaching out to law enforcement. Remember, you don’t have to handle this alone.";
+              "Cibar is telling you that cyberbullying is <b>very likely</b>. You might be dealing with repeated, harmful interactions involving adult or violent content. At this point, it’s crucial to block and report the person immediately. Keep evidence of what's happening and, if the content is especially harmful, consider reaching out to law enforcement. Remember, you don’t have to handle this alone.";
             break;
           case 3:
             message =
-              "Cibar has flagged this situation as extremely likely cyberbullying. You may be receiving explicit threats or adult content that’s crossing dangerous lines. It’s vital to stop all contact immediately, block the individual, and report them to the platform and authorities. Take screenshots of everything and get someone you trust involved to help you handle this.";
+              "Cibar has flagged this situation as <b>extremely likely</b> cyberbullying. You may be receiving explicit threats or adult content that’s crossing dangerous lines. It’s vital to stop all contact immediately, block the individual, and report them to the platform and authorities. Take screenshots of everything and get someone you trust involved to help you handle this.";
             break;
         }
 
@@ -97,7 +101,8 @@ async function analyzeScreenshot(dataUrl: string) {
         };
       } else {
         return {
-          message: "No cyberbullying content detected",
+          message:
+            "Cibar has detected <b>little to no chance</b> of cyberbullying in your current interactions. While this is reassuring, it's always a good idea to stay mindful of your online safety. Keep your privacy settings secure, and be cautious about who you interact with. Even if everything seems fine now, it's helpful to stay alert and know that Cibar will notify you if any problematic behavior arises. If you ever feel uncomfortable, you can still take action by documenting interactions and adjusting who you engage with online.",
           detections: detections,
           violence: detections.violence,
           adult: detections.adult,
@@ -113,20 +118,15 @@ async function analyzeScreenshot(dataUrl: string) {
 }
 
 function startCapturing() {
+  console.log("Capturing started", isCapturing);
   if (!isCapturing) {
     isCapturing = true;
     intervalId = setInterval(captureScreen, 10000);
   }
 }
 
-function stopCapturing() {
-  if (isCapturing && intervalId !== null) {
-    clearInterval(intervalId);
-    isCapturing = false;
-  }
-}
-
 function captureScreen() {
+  console.log("Screen capture initialized");
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
     if (activeTab && activeTab.id) {
@@ -149,9 +149,7 @@ function captureScreen() {
   });
 }
 
-chrome.runtime.onInstalled.addListener(() => {
-  startCapturing();
-});
+startCapturing();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "getScreenshots") {

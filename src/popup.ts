@@ -3,12 +3,19 @@ const RESULT_DISPLAY_DURATION = 3000;
 
 let lastUpdateTime = 0;
 
-function updateAnalysisResult(result: any) {
+console.log("Popup script loaded");
+
+function updateAnalysisResult(result: string) {
+  console.log(result);
   const statusElement = document.getElementById("status");
   const resultElement = document.getElementById("analysisResult");
 
   if (statusElement && resultElement) {
-    resultElement.textContent = JSON.stringify(result, null, 2);
+    resultElement.innerHTML =
+      result.slice(0, result.indexOf(".") + 1) +
+      "\n\n" +
+      result.slice(result.indexOf(".") + 1);
+    result.split("<b>").join(".\n");
 
     resultElement.style.display = "block";
     statusElement.style.display = "none";
@@ -17,7 +24,6 @@ function updateAnalysisResult(result: any) {
 
     setTimeout(() => {
       statusElement.style.display = "block";
-      resultElement.style.display = "none";
     }, RESULT_DISPLAY_DURATION);
   }
 }
@@ -32,14 +38,13 @@ function checkAnalysisStatus() {
 
     if (timeSinceLastUpdate >= CAPTURE_INTERVAL) {
       statusElement.style.display = "block";
-      resultElement.style.display = "none";
     }
   }
 }
 
 chrome.runtime.onMessage.addListener((message) => {
   if (message.action === "analysisResult") {
-    updateAnalysisResult(message.result);
+    updateAnalysisResult(message.analysisResult.message);
   }
 });
 

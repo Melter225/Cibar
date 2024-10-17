@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && cp src/popup.html src/manifest.json dist/"
+    "build": "tsc && cp src/popup.html src/manifest.json src/popup.css dist/"
   },
   "keywords": [],
   "author": "",
